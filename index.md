@@ -21,4 +21,4 @@ blah
 
 # Test
 
-<a href="https://github.com/MJAlexander/social_media_workshop/blob/main/1_test.html" title="Test page">test page</a>
+<a href="1_test.html" title="Test page">test page</a>

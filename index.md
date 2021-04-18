@@ -10,7 +10,7 @@ This section covers what you will need to do before the workshop. Please make su
 
 You need a Twitter account! This is required to authenticate your requests for Twitter data. If you don't already have an account, you can sign up here: https://twitter.com/.
 
-## Required pacakages and test code
+## Required packages and test code
 
 We will be using a lot of different packages, so before the workshop begins it would be great if you can make sure everything is installed and working. Briefly, the packages you will need installed are: 
 

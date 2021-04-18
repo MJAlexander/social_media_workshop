@@ -1,0 +1,294 @@
+---
+title: 'Quick intro to R and the tidyverse'
+author: "Monica Alexander"
+date: "18/04/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+It is assumed that you will be using R via the RStudio IDE. You are strongly encouraged to also use RStudio Projects.
+
+## RStudio
+
+RStudio has four different panes
+
+1. The top left is the source pane: this is where the files that you will edit are loaded
+2. The bottom left is the console. This pane shows R code that is executed
+3. The top right is the environment and history. This shows the variables, datasets and other objects that have been loaded into the R environment, and the history of R code/commands that have been executed. 
+4. The bottom right shows the files in your current folder, plots, packages loaded, and the help files. 
+
+## R Projects
+
+RStudio projects are associated with R working directories. They are good to use for several reasons:
+
+- Each project has their own working directory, so make dealing with file paths easier
+- Make it easy to divide your work into multiple contexts
+- Can open multiple projects at one time in separate windows
+
+To make a new project in RStudio, go to File --> New Project. If you've already set up a folder for this workshop, then select 'Existing Directory' and choose the folder that will contain all your workshop materials. This will open a new RStudio window, that will be called the name of your folder. 
+
+## Different parts of an R Markdown file
+
+This is an R Markdown file. An R Markdown file allows you to type free text and embed R code in the one document. The main parts of an R Markdown file are 
+
+- the YAML: this is the bit at the top of the document surrounded by dashes. The YAML tells Markdown information like: what the title and date is, who the author is, and what the Markdown file should be knit as (in this case, a pdf document). 
+- Headings: lines starting with # or ## or ### etc, with the text colored in blue. One # is a main heading, two ## is a sub-heading, etc
+- Free text, like what this text is. Note that when the document is knitted, some formatting is applied. (you will notice that these lines that start with a - will be formatted as bullet points)
+- R chunks, shown in gray, like the one below. 
+    + to add an R chunk, go to the menu above this pane and click Insert --> R
+    + to execute the code within the chunk, click the green play button on the right hand side of the chunk. Once you do this below, you should see the output (4) below the chunk
+    + Alternatively, you can execute the code by going to Run --> current chunk in the menu above, making sure your cursor is within the code chunk
+    + note that lines that start with a # within an R chunk are comments
+    + to just execute one line, select that link and go Run --> Selected line (or Cmd+return on a Mac or Ctrl+Enter on Windows) 
+    
+For a quick guide on codes for R Markdown check out this **[cheat sheet](https://rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)**.     
+
+```{r}
+# This is a comment
+2+2
+# Similar to any calculator R is sensitive to the order of operations
+5+(8*2)
+(5+8)*2
+```
+
+
+## How to knit a R Markdown file
+
+Above I was going on about 'knitting' the document. This means to compile it to output of a particular format that is more readable or more usual for a document. In our case we are compiling to a pdf. To knit this file, click the Knit button in the menu above. A pdf should pop up, showing a nicely formatted document. 
+
+# R basics
+
+Now we're going to go through some basics of R coding. 
+
+## Assign values to variables
+
+The chunk above we used R as a simple calculator (2+2) We can also assign **values** to **variables** with the back arrow i.e. `<-`. For example (execute this chunk to see the outcomes)
+
+```{r}
+# assigning the variable x to have a value of 1
+x <- 1
+# assigning the variable y to have a value of 2
+y <- 2
+# print these
+x
+y
+# we can add these together too
+x+y
+```
+
+Side note: you may see in other R codes that `=` is also used to assign values to a variable. 
+
+Values need not just be numbers:
+
+```{r}
+# the c() function allows you to create vectors of numbers (or characters)
+z <- c(3,4,3.2,5.1)
+z
+# pull out variable parts of z
+z[1]
+z[3]
+# length of z
+length(z)
+# the 5th element doesn't exist
+z[5]
+```
+
+Character strings:
+
+```{r}
+instructor_name <- "Monica Alexander"
+first_name <- "Monica"
+last_name <- "Alexander"
+```
+
+**Functions** in R are commands that take arguments and do operations to variables/objects. For example, the `paste` function pastes two (or more) strings together:
+
+```{r}
+z
+max(z)
+mean(z)
+```
+
+
+```{r}
+paste(first_name, last_name)
+paste(first_name, "June", last_name)
+```
+
+*Sidenote*: R is sensitive to capitalization, both in commands and in variable names. For example using `Paste` you would get an error. 
+
+## Getting help
+
+To see what a function does, and to check the arguments, type a "?" and then the function name, for example:
+
+```{r}
+?paste
+```
+
+Once you execute the code above, you should see that the help file for paste has appeared in the bottom right pane.
+
+## Logical statements
+
+It is useful to check to see if variables or objects are less than, equal to or greater than numbers. Below are some examples. Note that:
+
+- Equality is two = signs (not one)
+- Each of these statements returns a **logical** value i.e. TRUE or FALSE
+
+```{r}
+#equals
+x==1
+x==2
+# greater than
+y>1
+x>1
+# greater than or equal to
+x>=1
+# less than
+x<9
+```
+
+
+# Install tidyverse and load tidyverse
+
+For this workshop we will be using the tidyverse package a lot. You will need to install it. You can do so by uncommenting the code below and executing:
+
+```{r}
+# install.packages("tidyverse")
+```
+
+Once tidyverse is installed, load it in using the library command:
+
+```{r}
+library(tidyverse)
+```
+
+# Reading in data 
+
+The tidyverse package contains a lot of useful functions. One is `read_csv` function, which allows us to read in data from CSV files. 
+
+We are going to read in the GSS csv file. Note that you will probably have to change the file path below depending on where you saved the gss file. 
+
+```{r}
+# make sure the file name points to where you've saved the gss file
+# for example, I have it saved in a "data" folder
+gss <- read_csv(file = "../data/gss.csv")
+```
+
+The gss object is a data frame and contains a row for each respondent and a column for each variable in the dataset. The gss object technically is what is called a **tibble** -- this is a weird word and originates from the fact that the guy that made the tidyverse package is from New Zealand and when people from NZ say "table" it sounds like "tibble". 
+
+You can look at the gss file by going to the "Environment" pane and clicking on the table icon next to the gss object, or by typing `View(gss)` into the console. 
+
+You can print out the top rows of the gss object by using `head`
+
+```{r}
+head(gss)
+# or bottom rows
+tail(gss)
+```
+
+We can print the dimensions of the gss object (number of rows and number of columns)
+
+```{r}
+# output of this is a vector of 2 numbers 
+# first number = number of rows
+# second number is the number of columns
+dim(gss)
+```
+
+# Important functions
+
+This section illustrates some important functions that make manipulating datasets like the gss dataset much easier. 
+
+## `select`
+
+We can select a column from a dataset. For example the code below selects the column with the respondents age:
+
+```{r}
+select(gss, age)
+select(gss, age, education)
+```
+
+## The pipe
+
+Instead of selecting the age column like above, we can make use of the pipe function. This is the %>% notation. It looks funny but it may help to read it as like saying "and then". On a more technical note, it takes the first part of code and *pipes* it into the first argument of the second part and so on. So the code below takes the gss dataset AND THEN selects the age column:
+
+```{r}
+gss %>% 
+  select(age)
+```
+
+Notice that the commands above don't save anything. Assign the age column to a new object called `gss_age`
+
+```{r}
+gss_age <- gss %>% select(age)
+gss_age
+```
+
+## `arrange`
+
+The `arrange` function sorts columns from lowest to highest value. So for example we can select the age column then arrange it from smallest to largest number. Note that this involves using the pipe twice (so taking gss AND THEN selecting age AND then arranging age).
+
+```{r}
+gss %>% 
+  select(age) %>% 
+  arrange(age)
+```
+
+Side note: you need not press enter after each pipe but it helps with readability of the code. 
+
+## `filter`
+
+To filter rows based on some criteria we use the `filter` function. e.g. filter to only include those aged 30 or less:
+
+```{r}
+gss %>% 
+  filter(age<=30)
+```
+
+Filter takes any logical arguments. If we want to filter by participants who identified as *Female*, we use `==` operator. 
+
+```{r}
+gss %>% 
+  filter(sex=="Female") %>%
+  select(sex, age)
+```
+
+## `mutate`
+
+We can add columns using the mutate function. For example we may want to add a new column called `age_plus_1` that adds one year to everyone's age:
+
+```{r}
+gss %>% 
+  select(age) %>% 
+  mutate(age_plus_1 = age+1)
+```
+
+## `summarize`
+
+The `summarize` function is used to give summaries of one or more columns of a dataset. For example, we can calculate the mean age of all respondents in the gss:
+
+```{r}
+gss %>% 
+  select(age) %>% 
+  summarize(mean_age = mean(age))
+
+gss %>% 
+  filter(sex=="Female") %>%
+  summarize(count_Female = n())
+```
+
+
+# Review questions
+
+1. Create a new R Markdown file for these review questions
+2. Create a variable called "my_name" and assign a character string containing your name to it
+3. Find the mean age at first birth (age_at_first_birth) of respondents in the GSS    
+4. Create a new dataset that just contains GSS respondents who are less than 20 years old. 
+5. How many rows does the dataset in step 4 have?
+6. What is the largest case id in the dataset in step 4?
+

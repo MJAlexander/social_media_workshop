@@ -4,11 +4,11 @@ This website contains links to materials for a 2-hour 'Social Media Workshop for
 
 Below is a summary of all the modules we will aim to cover in the workshop. 
 
-# Set-up
+# Set-up and preliminaries
 
 This section covers what you will need to do before the workshop. Please make sure you have read through these instructions and materials before the workshop. 
 
-## Twitter accounts
+## Twitter account
 
 You need a Twitter account! This is required to authenticate your requests for Twitter data. If you don't already have an account, you can sign up here: https://twitter.com/.
 
@@ -29,9 +29,9 @@ This R script covers the main things you need: [0_setup.R](https://github.com/MJ
 
 Please try and run this before the workshop to make sure everything is working. 
 
-## Revision of the tidyverse and `ggplot`
+## Revision of the tidyverse and ggplot
 
-It is assumed you've seen R, the tidyverse and `ggplot` before. The following two R Markdown files give an overview of some key functions and plots that may be useful to revisit:
+It is assumed you've seen R, the tidyverse and ggplot before. The following two R Markdown files give an overview of some key functions and plots that may be useful to revisit:
 
 - [0a_intro_tidyverse](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/0a_intro_tidyverse.Rmd)
 - [0b_ggplot_overview](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/0b_ggplot_overview.Rmd)

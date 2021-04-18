@@ -2,8 +2,6 @@
 
 This website contains links to materials for a 2-hour 'Social Media Workshop for Population Research' workshop for [CAnD3 Fellows](https://www.mcgill.ca/cand3/) run in April 2021. The workshop provides R code examples of extracting, manipulating and analyzing Twitter data. You can also find all the code and related materials in the [GitHub repo](https://github.com/MJAlexander/social_media_workshop). 
 
-Below is a summary of all the modules we will aim to cover in the workshop. 
-
 # Set-up and preliminaries
 
 This section covers what you will need to do before the workshop. Please make sure you have read through these instructions and materials before the workshop. 

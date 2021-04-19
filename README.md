@@ -1,5 +1,5 @@
 # Social media data for population research
 
-Workshop for CAnD3 Fellows 2021
+Workshop run for CAnD3 Fellows 2021
 
-https://mjalexander.github.io/social_media_workshop/
+See overview of materials here: https://mjalexander.github.io/social_media_workshop/

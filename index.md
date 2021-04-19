@@ -17,11 +17,11 @@ We will be using a lot of different packages, so before the workshop begins it w
 - `tidyverse`
 - `rtweet`
 - `tidygeocoder`
+- `sf`
 - `leaflet`
 - `tidytext`
 - `lubridate`
 - `scales`
-- `sf`
 - `here` (optional; makes it easier to deal with file paths if you are using RStudio Projects).
 
 This R script covers the main things you need: [0_setup.R](https://github.com/MJAlexander/social_media_workshop/blob/main/code/0_setup.R).

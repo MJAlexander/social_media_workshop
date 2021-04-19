@@ -18,6 +18,7 @@ library(leaflet)
 library(tidytext)
 library(lubridate)
 library(scales)
+library(sf)
 
 
 # Twitter test ------------------------------------------------------------
@@ -50,6 +51,14 @@ monica_location <- monica_location %>%
           method = "osm")
 
 # monica_location should be a tibble of dimensions 1 x 3
+
+## check that we can correctly assign returned coordinates to the right province
+## to do this we need the converter function and also the Canada map object
+source("code/f_lonlat_to_state.R")
+canada_cd <- st_read("data/canada_cd_sim.geojson", quiet = TRUE)
+
+# this should return "Ontario"
+lonlat_to_state(tibble(x = monica_location$long, y = monica_location$lat))
 
 
 # Mapping test ------------------------------------------------------------

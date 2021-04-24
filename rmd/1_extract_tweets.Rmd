@@ -180,8 +180,7 @@ Here's a sneak peak of mapping geo-coded tweets, these are mentions of COVID aro
 
 ```{r, results = 'hide'}
 toronto_covid_tweets <- search_tweets(
-  "covid",
-  "lang:en",
+  q = "covid",
   geocode =  "43.6532,-79.3832,100mi",
   n = 2000
 )

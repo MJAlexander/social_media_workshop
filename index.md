@@ -35,4 +35,13 @@ It is assumed you've seen R, the tidyverse and ggplot before. The following two 
 - [0a_intro_tidyverse](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/0a_intro_tidyverse.Rmd)
 - [0b_ggplot_overview](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/0b_ggplot_overview.Rmd)
 
+# Introduction
+
+Slides coming soon. 
+
+# Module 1: Extracting Twitter data
+
+This module gives a brief overview of extracting information on users, topics and locations using the `rtweet` package. We will go through the R Markdown file here: [1_extract_tweets.Rmd](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/1_extract_tweets.Rmd).
+
+
 

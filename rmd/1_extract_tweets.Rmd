@@ -1,0 +1,212 @@
+---
+title: "1. Extracting information fom Twitter"
+author: "Monica Alexander"
+date: "CAnD3 Workshop, 28 April 2021"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+fontsize: 12pt
+header-includes: \usepackage{setspace} \onehalfspacing
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, eval = FALSE)
+```
+
+# Overview
+
+This module takes you through the basics of extracting information from Twitter using functions from the `rtweet` package. We will cover how to extract information about a specific user; how to extract information about a specific keyword/topic; and how to extract tweets based on location. 
+
+Notes:
+
+- This is an R Markdown document. If you would like to knit this document to a pdf, press the "Knit" button in RStudio. 
+- The settings in this document are such that when you knit the document, the code is not evaluated (see line 13 in the R Markdown document where it says `eval = FALSE`). This is so you don't make calls to the Twitter API everytime you knit the document. If you would like to eventually change this, just replace `FALSE` with `TRUE` above. 
+
+
+## Load packages
+
+First, let's load in the packages we'll be using in this module:
+
+```{r}
+library(rtweet)
+library(tidyverse)
+library(here)
+library(lubridate)
+library(scales)
+library(leaflet)
+```
+
+# Focusing on a user
+
+Firstly, let's extract some information about a particular Twitter user. I'm using the CAnD3 Twitter account as an example. We can get some basic info using the `lookup_users` function. This returns a "tibble" (data frame) with 90 columns. Some of the info is related to the user in general, and some of the info is related to the most recent tweet
+
+
+```{r}
+cand3_info <- lookup_users("CAnD3_PG")
+#colnames(cand3_info)
+
+# for example, pull out self-reported location
+cand3_info$location
+```
+
+## Friends and followers
+
+Who is CAnD3 following? We can find this out using the `get_friends` function to get the user IDs, and then feed those IDs into the `lookup_users` function again to get more detailed information about the friends:
+
+```{r}
+cand3_friends <- get_friends("CAnD3_PG")
+cand3_friends_data <- lookup_users(cand3_friends$user_id)
+```
+
+We can do a similar thing to get info about the people who are following CAnD3:
+
+```{r}
+cand3_followers <- get_followers("CAnD3_PG")
+cand3_followers_data <- lookup_users(cand3_followers$user_id)
+```
+
+## Tweets and favorites
+
+We can extract most recent tweets from a user's timeline using the `get_timeline` function (we can actually get all of CAnD3's tweets):
+
+```{r}
+cand3_tweets <- get_timeline("CAnD3_PG", n = 500)
+```
+
+We can plot the number over time (aggregated to various time scales) pretty easily using a built-in `ts_plot` function from `rtweet`:
+
+```{r}
+cand3_tweets %>% 
+  ts_plot(by = "months") + 
+  geom_point() + 
+  labs(title = "Frequency of CAnD3 tweets by month", x = NULL,
+       subtitle = "Aggregated by month from September 2020 to April 2021")+
+  theme_bw(base_size = 14)
+```
+
+Side note: alternatively, you can do this yourself, which gives a bit more control:
+
+```{r}
+cand3_tweets %>% 
+  mutate(created_at = floor_date(created_at, "month")) %>% # round to month
+  group_by(created_at) %>% 
+  tally() %>% # count number of tweets by month
+  ggplot(aes(as.Date(created_at), n)) + 
+  geom_line()+
+  geom_point() + 
+  scale_x_date(labels = date_format("%m-%Y"))+
+  labs(title = "Frequency of CAnD3 tweets by month", x = NULL,
+       subtitle = "Aggregated by month from September 2020 to April 2021")+
+  theme_bw(base_size = 14)
+``` 
+
+Finally, we can get info about the tweets CAnD3 has liked in the past using the `get_favorites` function. 
+
+
+```{r}
+cand3_favorites <- get_favorites("CAND3_PG")
+```
+
+What proportion of tweets that CAnD3 liked are tweets by their freinds? About 80%:
+
+```{r}
+liked_friends <- sum(cand3_favorites$user_id %in% cand3_friends$user_id)
+liked_friends/nrow(cand3_favorites)
+```
+
+
+# Focusing on a topic
+
+Now let's move on to extracting tweets about a particular topic. The `search_tweets` function is the workhorse here. For example, let's do a little search for tweets that include the term "life expectancy". The `include_rts` argument indicates whether or not you want to also include tweets that are retweets. 
+
+```{r}
+le_tweets <- search_tweets("life expectancy", 
+                           n = 100, 
+                           include_rts = FALSE)
+```
+
+In practice, if we were collecting tweets about life expectancy for a research project, we'd probably want to do multiple searches over time. Save the previous output first:
+
+```{r}
+write_rds(le_tweets, here("output/le_tweets.RDS"))
+```
+
+Then imagine we came back and wanted to do an updated search. Ideally we would want to restrict the search to only return tweets that are more recent than our previous search. You can control this through the use of the `since_id` function. 
+```{r}
+
+# open previous extract
+le_tweets <- read_rds(here("output/le_tweets.RDS"))
+
+# get the most recent tweet from previous extract
+oldest_tweet <- max(le_tweets$status_id)
+
+# get more tweets
+le_tweets_2 <- search_tweets("life expectancy", 
+                             n = 100, 
+                             include_rts = FALSE,
+                             since_id = oldest_tweet)
+
+le_tweets_update <- bind_rows(le_tweets, le_tweets_2)
+
+# and then could save this updated version
+
+```
+
+Let's plot this: 
+
+```{r}
+le_tweets_update %>% 
+  ts_plot("hours") + 
+  geom_point() + 
+  labs(title = "Tweets about life expectancy by hour") + 
+  theme_bw(base_size = 14)
+```
+
+# Focusing on a place
+
+Finally, in addition to searching for particular topics, we can restrict our searches to be based on particular locations. For example, the following chunk of code searches for 100 tweets within a 100 mile radius of McGill. 
+
+```{r}
+mcgill_tweets <- search_tweets(
+  geocode =  "45.5048,-73.5772,100mi",
+  n = 100
+)
+```
+
+It's easy to Google the latitude and longitude of places you're interested in. Alternatively, `rtweet` as a built-in `lookup_coords` function, which searches for a particular place or address using Google Maps. In practice I found this annoying to set-up and get working (and you need to authorize payment for on the Google API platform), so I wouldn't recommend it. 
+
+Here's a sneak peak of mapping geo-coded tweets, these are mentions of COVID around Toronto:
+
+```{r, results = 'hide'}
+toronto_covid_tweets <- search_tweets(
+  "covid",
+  "lang:en",
+  geocode =  "43.6532,-79.3832,100mi",
+  n = 2000
+)
+toronto_covid_tweets <- lat_lng(toronto_covid_tweets)
+leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lat = toronto_covid_tweets$lat,
+             lng = toronto_covid_tweets$lng, 
+             popup = toronto_covid_tweets$text)
+```
+
+
+
+# Review questions
+
+1. When did Amélie (Twitter handle: amelieqv) join Twitter?
+2. Get the friends and followers of PAA (Twitter handle: PopAssocAmerica). What proportion of PAA's friends follow them back?
+3. Search for tweets that contain the hashtag "#COVID19" within a 50 mile radius of Toronto
+4. (harder) How many of the friends of CAnD3's friends follow CAnD3?
+
+# End notes
+
+- The following examples mostly only extract 100 or so tweets about a particular topic/place. If you are extracting Twitter data for research, you probably need to extract more than that, and repeat the process over time. The default search limit is about 18,000 tweets, but after that you can explore the `retryonratelimit = TRUE` argument (see documentation for `search_tweets`, for example). 
+- For larger projects, you will need to investigate creating a separate Twitter app to make larger API calls. The rtweet documention gives some tips about getting started with this: https://docs.ropensci.org/rtweet/articles/auth.html
+- The `search_tweets` function only returns tweets from the last 6-9 days. There are other search functions within `rtweet` that allow searches of older tweets (e.g. `search_fullarchive`). You need a developer account to access these. See documentation for these functions for more info. 
+
+
+

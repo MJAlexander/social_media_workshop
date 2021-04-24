@@ -41,7 +41,9 @@ Slides coming soon.
 
 # Module 1: Extracting Twitter data
 
-This module gives a brief overview of extracting information on users, topics and locations using the `rtweet` package. We will go through the R Markdown file here: [1_extract_tweets.Rmd](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/1_extract_tweets.Rmd).
+This module gives a brief overview of extracting information on users, topics and locations using the `rtweet` package. 
+
+R Markdown file: [1_extract_tweets.Rmd](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/1_extract_tweets.Rmd).
 
 
 

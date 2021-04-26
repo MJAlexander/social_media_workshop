@@ -46,7 +46,7 @@ This module gives a brief overview of extracting information on users, topics an
 
 R Markdown file: [1_extract_tweets](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/1_extract_tweets.Rmd).
 
-# Model 2: Geocoding, mapping, and population comparison
+# Module 2: Geocoding, mapping, and population comparison
 
 This module shows you how to geocode tweets (based on exact and self-reported locations), map data, and compare tweet frequency to population data. 
 

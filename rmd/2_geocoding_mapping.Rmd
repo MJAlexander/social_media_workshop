@@ -1,0 +1,334 @@
+---
+title: "2. Geocoding, mapping, and population comparison"
+author: "Monica Alexander"
+date: "CAnD3 Workshop, 28 April 2021"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+fontsize: 12pt
+header-includes: \usepackage{setspace} \onehalfspacing
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, eval = TRUE)
+```
+
+# Overview
+
+In this module we are going to learn some basics of geocoding and mapping data in R. We will geocode tweets based on geotags and self-reported location, map those tweets using static and interactive maps, and compare Canadian tweet frequencies to the distribution of Canadian population by province/territory. 
+
+First, let's load in the packages we need. This includes the usual tidyverse and rtweet, plus a few geocoding/mapping related packages. 
+
+```{r}
+library(tidyverse)
+library(here)
+library(rtweet)
+library(tidygeocoder)
+library(leaflet)
+library(sf)
+library(ggmap)
+```
+
+
+# Geocoding tweets
+
+First, let's extract a small number of tweets in Toronto:
+
+```{r}
+toronto_tweets <- search_tweets(
+  n = 50,
+  geocode = "43.6532,-79.3832,50mi",
+  include_rts = FALSE
+)
+```
+
+## Based on geocodes available
+
+If you look at the `bbox_coords` column of the `toronto_tweets` tibble, it's probably the case that most cells are full of NAs. There are probably a few of non-NA entries though. These represent tweets that are geolocated. This is an opt-in feature of Twitter, so most tweets don't have it. 
+
+For the tweets that have a geolocation, we can use the `lat_lng` function in rtweet to automatically create a latitude and longitude column:
+
+```{r}
+toronto_tweets <- lat_lng(toronto_tweets)
+toronto_tweets %>% 
+  select(lat, lng) %>% 
+  filter(!is.na(lat))
+```
+
+The total number tweets that have geolocation:
+
+```{r}
+toronto_tweets %>% 
+  summarize(sum(!is.na(lat)))
+```
+
+## Based on self-reported location
+
+We can get more location data by geocoding self-reported locations. This is done using the `tidygeocoder` package. The first step is to pull out these locations and put them in a tibble. Notice that a lot of them say Toronto, Ontario.
+
+```{r}
+tweet_location <- tibble(location = toronto_tweets$location)
+```
+
+The next step is to geocode these:
+
+```{r}
+tweet_location <- tweet_location %>% 
+  tidygeocoder::geocode(address = location, 
+          method = "osm" 
+          )
+
+# rename the columns to make it clear they are self-reported
+tweet_location <- tweet_location %>% 
+  rename(lat_sr = lat, 
+         lng_sr = long)
+```
+
+Then we can join these lat/longs back onto our tweets tibble, and then create a "final" latitude and longitude column which takes the location data if available, and if not, it takes the self-reported information:
+
+```{r}
+toronto_tweets <- toronto_tweets %>% 
+  bind_cols(tweet_location %>% select(-location))
+
+toronto_tweets <- toronto_tweets %>% 
+  mutate(lat_final = ifelse(!is.na(lat), lat, lat_sr),
+         lng_final = ifelse(!is.na(lng), lng, lng_sr))
+```
+
+Now everything has some sort of lat/long:
+
+```{r}
+toronto_tweets %>% 
+  summarize(sum(!is.na(lat_final)))
+```
+
+# Mapping
+
+Now we have geocode tweets, we can visualize them. This section shows how to do this using both static and interactive maps. Before we start, let's load in a Canadian map shape file in GeoJSON format. Note that I created this file from shapefiles available on StatCan, following instructions detailed [here](https://kieranhealy.org/blog/archives/2018/12/09/canada-map/). 
+
+```{r}
+canada_cd <- st_read(here("data/canada_cd_sim.geojson"), quiet = TRUE)
+```
+
+## Static maps
+
+To get a basic map of Canada we can use ggplot:
+
+```{r}
+p <- ggplot(data = canada_cd) + 
+  geom_sf(color = "gray60", 
+          size = 0.1)
+p
+```
+
+We don't really need the axes or background here, so let's remove:
+
+```{r}
+p +
+  theme_void() 
+```
+
+Now let's zoom into Toronto. This involves restricting the coordinates using `coord_sf`. I find [this website](https://boundingbox.klokantech.com/) useful for working out the limits. 
+
+```{r}
+p +
+  theme_void() +
+  coord_sf(xlim = c(-81, -78), ylim =c(43, 45))
+```
+
+Now we can add on the tweets using `geom_point`:
+
+```{r}
+p +
+  guides(fill = FALSE) +
+  theme_void() +
+  coord_sf(xlim = c(-81, -78), ylim =c(43, 44.5)) + 
+  geom_point(data = toronto_tweets, aes(x = lng_final, y = lat_final))
+```
+
+### Slightly more interesting looking maps
+
+Stamen maps are a good way to easily make static maps contain more background information. We can access these through `ggmap`. (See [here](https://www.tellingstorieswithdata.com/static-communication.html#australian-polling-places) for a more detailed example). Firstly, define the bounding both that we're interested in:
+
+
+```{r}
+bbox <- c(left = -81, bottom = 43, right = -78, top = 44.5)
+```
+
+Then grab this map and plot with no data:
+
+```{r}
+toronto_stamen_map <- ggmap::get_stamenmap(bbox, zoom = 9, maptype = "toner-lite")
+
+ggmap(toronto_stamen_map) + 
+  theme_void()
+```
+
+Now we can add our points:
+
+```{r}
+ggmap(toronto_stamen_map) + 
+  theme_void() + 
+  geom_point(data = toronto_tweets, aes(x = lng_final, y = lat_final), 
+             color = "firebrick4")
+```
+
+
+## Interactive maps
+
+The `leaflet` package makes it relatively easy to build interactive maps. Here's one adding our Toronto tweets, with the tweet text popping up if you click on the markers: 
+
+```{r, results = 'hide'}
+leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lat = toronto_tweets$lat_final,
+             lng = toronto_tweets$lng_final,
+             popup = toronto_tweets$text)
+```
+
+There's a bunch of different tiles available, for example, here's the Stamen toner lite one from above:
+
+```{r, results='hide'}
+leaflet() %>% 
+  addProviderTiles(providers$Stamen.TonerLite) %>% 
+  addMarkers(lat = toronto_tweets$lat_final,
+             lng = toronto_tweets$lng_final,
+             popup = toronto_tweets$text)
+```
+
+
+
+# Comparing to Canadian population
+
+Finally, let's compare the frequency of tweets in Canadian extracted at a particular time to the distribution of the Canadian population, to see how representative (or not) tweeters are based on location. 
+
+## Load in Canadian tweets and assigning coordinates to provinces
+
+For this exercise, let's use some tweet I extracted on Sunday April 25. If you view the loaded tibble (called `can_gc`) and scroll to the end, you'll notice I've already geocoded these tweets like we did above (geocoding thousands takes a long time!)
+
+```{r}
+load(here("output/can1_gc.Rda"))
+```
+
+In order to compare to province populations, we need to convert our coordinates to provinces. To do that, here's a little function called `lonlat_to_state`. It basically puts the tweet coordinates and Canada map data on the same coordinate system and sees which provinces contain which points. 
+
+```{r}
+source(here("code/f_lonlat_to_state.R"))
+```
+
+The `lonlat_to_state` function requires as input a tibble/dataframe with the x column equal to longitude and the y column equal to latitude. Looking at the resulting provinces, you'll notice a lot of Ontarios:
+
+```{r}
+provinces <- lonlat_to_state(tibble(x = can_gc$lng_final, y = can_gc$lat_final))
+```
+
+Join this information back onto our Canadian tweets:
+
+```{r}
+can_gc <- can_gc %>% 
+  bind_cols(province = provinces)
+```
+
+## Calculate number and proportion by province
+
+Now we want to calculate the proportion of all tweets by province:
+
+```{r}
+can_tweets_province <- can_gc %>% 
+  group_by(province) %>% 
+  tally() %>% 
+  mutate(prop = n/sum(n))
+can_tweets_province
+```
+
+Let's map these to get an idea:
+
+```{r, results = 'hide'}
+canada_cd_tweets <- canada_cd %>% 
+  left_join(can_tweets_province %>% rename(PRNAME = province))
+
+bins <- c(0, 0.01, 0.05, 0.1, 0.5, 1)
+pal <- colorBin("YlOrRd", domain=canada_cd_tweets$prop, bins = bins)
+
+leaflet(canada_cd_tweets) %>% 
+  addProviderTiles("CartoDB.Positron") %>% 
+  addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.2,
+              fillColor = ~pal(prop)) %>% 
+  setView(-106, 56, zoom = 3) %>% 
+  addLegend(pal = pal, 
+            values = canada_cd_tweets$prop, 
+            position = "bottomright", 
+            title = "Proportion of tweets")
+```
+
+## Load in population estimates
+
+Now we want to compare these proportions to the population distribution. First, let's load in population estimates from StatCan. These are for the first quarter in 2021. I downloaded the data from [here](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000901).
+
+```{r}
+can_pop <- read_csv(here("data/canadian_population.csv"))
+```
+
+Now we want to compute the proportion of the total Canadian population by province/territory:
+
+```{r}
+can_pop <- can_pop %>% 
+  mutate(prop = population/sum(population))
+```
+
+## Compare distributions
+
+Let's compare the distributions. First up, we need to clean up the Twitter province names so they are the same as the population ones.
+
+```{r}
+can_tweets_province <- can_tweets_province %>% 
+  mutate(province = str_remove(province, "/.*")) %>% 
+  mutate(province = str_trim(province)) %>% 
+  rename(n_tweets = n, prop_tweets = prop)
+```
+
+Join the two proportions together and have a look. It seems that Ontario is wildly over-represented. 
+
+```{r}
+can_pop %>% 
+  left_join(can_tweets_province) %>% 
+  select(-population, -n_tweets) %>% 
+  mutate_at(.vars = vars(prop:prop_tweets), funs(round(., 2))) %>% 
+  arrange(-prop)
+```
+
+We can also plot these proportions to better visualize differences in proportions. First, some tidyverse to get the data into a easy plotting format:
+
+```{r}
+props_long <- can_pop %>% 
+  left_join(can_tweets_province) %>% 
+  select(-population, -n_tweets) %>% 
+  mutate(province = fct_reorder(province, prop)) %>% 
+  pivot_longer(-province, names_to = "source", values_to = "prop") %>% 
+  mutate(source = ifelse(source == "prop", "StatCan", "Twitter")) 
+```
+
+Now plot:
+
+
+```{r}
+ggplot(props_long, aes(province, prop, fill = source)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  coord_flip() + 
+  labs(title = "Canadian population and tweets",
+       caption = "Tweets collected April 25 using rtweet",
+       x = NULL,
+       y = "proportion of total") + 
+  theme_bw(base_size = 14) + 
+  scale_fill_brewer(palette = "Set1")
+```
+
+
+# Review exercise
+
+Choose a topic (search query, e.g. keywords or hashtag) that you're interested in, and search for tweets mentioning that topic. Geocode the resulting tweets using the `lat_lon` function applied to tweets that are already geotagged, and also by geocoding self-reported location. What proportion of tweets were already geotagged? Make a map of the resulting tweets. 
+
+(harder): Assuming you didn't restrict the location to your search query above, create a function that assigns coordinates to a country, then summarize the location of the tweets by country. Hint: You can get the required `sf` object using the `world` data as part of the `spData` package. 

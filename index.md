@@ -18,6 +18,7 @@ We will be using a lot of different packages, so before the workshop begins it w
 - `rtweet`
 - `tidygeocoder`
 - `sf`
+- `ggmap`
 - `leaflet`
 - `tidytext`
 - `lubridate`

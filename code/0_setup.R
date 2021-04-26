@@ -19,6 +19,7 @@ library(tidytext)
 library(lubridate)
 library(scales)
 library(sf)
+library(ggmap)
 
 
 # Twitter test ------------------------------------------------------------

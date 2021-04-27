@@ -52,7 +52,7 @@ This module shows you how to geocode tweets (based on exact and self-reported lo
 
 R Markdown file: [2_geocoding_mapping](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/2_geocoding_mapping.Rmd).
 
-# Model 3: Text analysis
+# Module 3: Text analysis
 
 In this module we do some basic text analysis, including how to clean/detect strings, word frequencies, bigrams, and sentiment analysis. 
 

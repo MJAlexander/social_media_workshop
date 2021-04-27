@@ -42,19 +42,19 @@ Slides coming soon.
 
 # Module 1: Extracting Twitter data
 
-This module gives a brief overview of extracting information on users, topics and locations using the `rtweet` package. 
+This module gives a brief overview of extracting information on users, topics, and locations using the `rtweet` package. 
 
 R Markdown file: [1_extract_tweets](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/1_extract_tweets.Rmd).
 
 # Module 2: Geocoding and mapping
 
-This module shows you how to geocode tweets (based on exact and self-reported locations), map data, and compare tweet frequency to population data. 
+This module shows you how to geocode tweets (based on exact and self-reported locations), map data, and compare tweet frequency to population data. Includes an intro to the `tidygeocoder` package. 
 
 R Markdown file: [2_geocoding_mapping](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/2_geocoding_mapping.Rmd).
 
 # Module 3: Text analysis
 
-In this module we do some basic text analysis, including how to clean/detect strings, word frequencies, bigrams, and sentiment analysis. 
+In this module we do some basic text analysis, including how to clean/detect strings, word frequencies, bigrams, and sentiment analysis. All analysis is done using the `tidytext` package. 
 
 R Markdown file: [3_text](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/3_text.Rmd).
 

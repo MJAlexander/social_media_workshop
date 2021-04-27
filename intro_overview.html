@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Social Media for Population Research</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Monica Alexander   University of Toronto" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <script src="https://use.fontawesome.com/5235085b15.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Social Media for Population Research
+### Monica Alexander <br> University of Toronto
+### CAnD3 Workshop, 28 April 2021
+
+---
+
+
+
+
+
+
+# Overview
+
+--
+
+## Motivation
+
+--
+
+## Types and uses of social media data 
+
+--
+
+## How do we get it
+
+--
+
+## Issues and what don't we know
+
+--
+
+## Workshop content
+
+---
+
+class: center, middle, inverse
+
+# Motivation
+---
+
+
+# Motivation
+
+--
+
+- With the rise of social media comes the rise of data
+
+--
+
+- Data about people
+--
+
+    + characteristics, movements, connections, interests, views...
+--
+
+- Potentially rich data sources for population research
+--
+
+- Strengths that traditional data sources often don't have
+
+--
+
+    + timely
+--
+
+    + large sample sizes
+--
+
+- But potential drawbacks as well (more later)
+
+---
+
+class: center, middle, inverse
+
+# Types and uses of social media data
+---
+
+# Types of social media data
+
+--
+
+### By platform
+
+--
+
+- Twitter 
+
+--
+
+- Facebook
+
+--
+
+- LinkedIn
+
+--
+
+- Instagram, TikTok...
+
+--
+
+- Springer, Google Scholar, arXiv
+
+---
+
+# Types of social media data
+
+--
+
+### By data collected
+
+--
+
+- Population data from advertising platforms
+
+    + aggregate level population estimates by subgroup
+    + useful in demographic estimation
+    + e.g. [Estimating out-migration from Puerto Rico](https://onlinelibrary.wiley.com/doi/abs/10.1111/padr.12289)
+
+--
+
+- Individual digital trace data
+
+    + Individual profiles, friends and behavior
+    + Text / media data, networks
+    + Use to study networks, information spread, opinions, etc
+    + e.g. [Assessing the Russian Internet Research Agency’s impact on the political attitudes and behaviors of American Twitter users in late 2017](https://www.pnas.org/content/pnas/117/1/243.full.pdf)
+    + e.g. [Geography of Twitter networks](https://www.sciencedirect.com/science/article/pii/S0378873311000359?casa_token=_ihyPFLiN3wAAAAA:wlhmucP0-sdp_vwynl23QWEPWjNdj0w1lVAgzA8UjOQzcArTguH2BFt48MVXQc3Vkc-K3cui7Ws)
+
+---
+# Types of social media data
+
+### By data collected
+    
+--
+
+- Survey data
+
+    + Use social media platforms to reach and survey people
+    + Timely, hard-to-reach populations, cheap?
+    + e.g. [Behaviours and attitudes in response to the COVID-19 pandemic: insights from a cross-national Facebook survey](https://epjdatascience.springeropen.com/articles/10.1140/epjds/s13688-021-00270-1)
+
+--
+
+- Detailed user data
+
+    + Know everything about your userbase
+    + Probably only when you work at these places
+    + e.g. [Measuring Long-Term Displacement Using Facebook Data](https://research.fb.com/publications/measuring-long-term-displacement-using-facebook-data/)
+    + e.g. [Country Differences in Social Comparison on Social Media](https://research.fb.com/publications/country-differences-in-social-comparison-on-social-media/)
+
+---
+
+class: center, middle, inverse
+
+# How do we get it
+
+---
+
+# How do we get it
+
+--
+
+### Manually?
+
+- I guess you could copy paste info you view on a social media webpage
+- Slow, hard, not reproducible
+
+--
+
+### Webscraping
+
+- Write code that visit a webpage and extracts data
+- More automated and reproducible, but often not best practice
+- Legality and ethical considerations depend on the specifics of what you're doing
+- Some good tips and principles are [here](https://www.tellingstorieswithdata.com/gather-data.html#scraping).
+
+---
+# How do we get it
+
+--
+
+### Application Programming Interfaces (APIs)
+
+--
+
+- A tool that makes it easier for a computer to query a website's data
+- Most social media websites have APIs, that let you programmatically query and extract data
+- e.g. (Facebook marketing API)[https://developers.facebook.com/docs/marketing-apis/]
+- (Twitter API)[https://developer.twitter.com/en/docs]
+- e.g. (arXiv API)[https://arxiv.org/help/api/]
+
+--
+
+### R packages that help to query APIs
+
+--
+
+- Many pacakges exist to help R users query APIs
+- We will be using two: `rtweet` and `tidygeocoder`
+- Others e.g. `rfacebookstat`, `Rlinkedin`, `scholar`...
+
+---
+
+class: center, middle, inverse
+
+# Issues and what we don't know
+
+---
+
+# Non-representativeness
+
+--
+
+- As population researchers, we are generally interested in studying phenomena in the broader population (or specific subgroups of the broader population)
+
+- But in general, people who use social media are not at all representative of the broader population
+
+--
+- How do we adjust for this?
+
+    + some examples in the demographic estimation realm. Can use a 'gold standard' data source to estimate and adjust for biases
+    + e.g. see [here](https://link.springer.com/article/10.1007%2Fs11113-020-09599-3) and [here](https://www.demogr.mpg.de/papers/working/wp-2020-019.pdf)
+    + but harder to think about in other realms. How do we generalize networks, or opinions/behavior seen online?
+
+- If we can only infer based on the population for which we have data for, how useful is it?
+---
+
+# Self-reporting and other biases
+--
+
+- A lot of information is self-reported
+
+- e.g. self-reported locations, public bio information
+
+- No demographic information is available on Twitter
+
+    + past efforts have imputed based on e.g. profile pictures, names
+    + error prone, may be inflating bias
+
+- How do we check for biases? 
+
+- How do we make sure analyses are robust to assumptions?
+
+--
+
+Some good references:
+
+- [Demography in the Digital Era: New Data Sources for Population Research](https://osf.io/preprints/socarxiv/24jp7/)
+- [Promises and Pitfalls of Using Digital Traces
+for Demographic Research](https://link.springer.com/content/pdf/10.1007/s13524-018-0715-2.pdf)
+
+---
+
+class: center, middle, inverse
+
+# This workshop
+
+---
+
+# What it is and what it isn't
+--
+
+### What we will be doing 
+
+- A brief introduction to how get extract and work with Twitter data
+
+- Introduction to not only querying APIs, but also **geocoding**, **mapping**, and **text analysis**
+
+- Useful skills and code to take with you and think about how to apply in your own research
+
+--
+
+### But think about
+
+- How can I draw inferences about the population I'm interested in?
+
+- How can I check the robustness of my analysis?
+
+- How can I make my research open and reproducible?
+
+
+
+
+---
+
+# Let's get started!
+
+### Contact info
+
+&lt;a href="mailto:monica.alexander@utoronto.ca"&gt;&lt;i class="fa fa-paper-plane fa-fw"&gt;&lt;/i&gt;&amp;nbsp; monica.alexander@utoronto.ca&lt;/a&gt;&lt;br&gt;
+
+&lt;a href="monicaalexander.com"&gt;&lt;i class="fa fa-link fa-fw"&gt;&lt;/i&gt;&amp;nbsp; monicaalexander.com&lt;/a&gt;&lt;br&gt;
+
+&lt;a href="http://twitter.com/monjalexander"&gt;&lt;i class="fa fa-twitter fa-fw"&gt;&lt;/i&gt;&amp;nbsp; @monjalexander&lt;/a&gt;&lt;br&gt;
+
+&lt;a href="http://github.com/MJAlexander"&gt;&lt;i class="fa fa-github fa-fw"&gt;&lt;/i&gt;&amp;nbsp; @MJAlexander&lt;/a&gt;&lt;br&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -40,7 +40,7 @@ It is assumed you've seen R, the tidyverse and ggplot before. The following two 
 
 Here are some slides that introduce social media for population research and give an overview of what we will be covering: 
 
-<a href="intro_overview.html" title="Social Media for Population Research">test page</a>
+<a href="intro_overview.html" title="Social Media for Population Research">Slides on social media for population research</a>
 
 # Module 1: Extracting Twitter data
 

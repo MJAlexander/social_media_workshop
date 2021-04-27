@@ -36,9 +36,11 @@ It is assumed you've seen R, the tidyverse and ggplot before. The following two 
 - [0a_intro_tidyverse](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/0a_intro_tidyverse.Rmd)
 - [0b_ggplot_overview](https://github.com/MJAlexander/social_media_workshop/blob/main/rmd/0b_ggplot_overview.Rmd)
 
-# Introduction
+# Introduction and overview
 
-Slides coming soon. 
+Here are some slides that introduce social media for population research and give an overview of what we will be covering: 
+
+<a href="intro_overview.html" title="Social Media for Population Research">test page</a>
 
 # Module 1: Extracting Twitter data
 

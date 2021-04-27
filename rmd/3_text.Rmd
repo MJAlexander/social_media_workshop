@@ -1,0 +1,316 @@
+---
+title: "3. Text analysis"
+author: "Monica Alexander"
+date: "CAnD3 Workshop, 28 April 2021"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+    latex_engine: xelatex
+fontsize: 12pt
+header-includes: \usepackage{setspace} \onehalfspacing
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, eval = TRUE)
+```
+
+# Overview
+
+This module will introduce you to some basic tools for text analysis, which is useful when looking at Twitter data. We will look at how to clean data and count word frequencies, bigrams, and some basic sentiment analysis. All analysis is based on the `tidytext` package, which is explained in more detailed (with great examples) in [this](https://www.tidytextmining.com/index.html) textbook, which is freely accessible online. 
+
+Load in the packages we need, which includes `tidytext` and `lubridate`; the latter is useful for quick date manipulation. 
+
+```{r}
+library(tidyverse)
+library(here)
+library(rtweet)
+library(tidytext)
+library(lubridate)
+```
+
+## Load in the data
+
+For this module we'll be using data I collected over a couple of days. There's about 125,000 tweets in Toronto. The tibble contains the usual 90 columns, plus one additional column, which indicates whether or not the tweet mentions "vaccine" (or vaccinated, or vaccination). 
+
+```{r}
+load(here("data/toronto_tweets.Rda"))
+```
+
+## `stringr` is your friend
+
+Throughout this module we will be using functions from the `stringr` package (which is loaded as part of the tidyverse). These functions, which mostly start with the prefix `str_`, are super useful in handling text. 
+
+For example, we can filter our dataset to only include tweets that mention "paid sick days"
+
+```{r}
+toronto_tweets %>% 
+  filter(str_detect(text, "paid sick days")) %>% 
+  select(text) %>% 
+  head()
+```
+
+Let's use `stringr` to get a rough guess at the number of people who say they got vaccinated from 24-26 April.
+
+```{r}
+people_vaccinated <- toronto_tweets %>% 
+  filter(day(created_at)>23&day(created_at)<27) %>% 
+  filter((str_detect(text, "I got")|str_detect(text, "got my"))&
+           str_detect(text, "vaccin*"))
+```
+
+Now calculate how many unique users this corresponds to, and divide through by the total number of users, to get a rough rate of vaccination in Toronto:
+
+```{r}
+n_vax <- length(unique(people_vaccinated$user_id))
+n_total <- toronto_tweets %>% 
+  filter(day(created_at)>23&day(created_at)<27) %>% 
+  summarize(length(unique(user_id))) %>% 
+  pull()
+
+n_vax/n_total*100
+```
+
+Based on [these](https://data.ontario.ca/dataset/covid-19-vaccine-data-in-ontario) data around 2% of the adult population were administered vaccines on these days. Is this difference surprising?
+
+# Word frequencies
+
+Now let's start playing around with word frequencies. The first step in the `tidytext` approach is to convert our strings of words into separate words. Here a 'word' is defined as anything with a space around it, so before we do that I clean up the tweet texts a bit to remove handles, hashtags, numbers, websites, and non-English characters. Have a look at the resulting `tidy_tweets` tibble and notice the format. 
+
+```{r}
+tidy_tweets <- toronto_tweets %>% 
+  mutate(tweet = row_number()) %>% 
+  filter(is_retweet==FALSE) %>% 
+  mutate(text = str_trim(str_replace_all(text, "@[A-Za-z0-9]+\\w+", ""))) %>% # remove twitter handles
+  mutate(text = str_trim(str_replace_all(text, "#[A-Za-z0-9]+\\w+", ""))) %>% # remove hashtags
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z0-9]+\\w+", "")) %>% # remove websites
+  mutate(text = str_replace_all(text, "\\w*[0-9]+\\w*\\s*", "")) %>% # remove numbers
+  mutate(text = str_replace_all(text, "[^\x01-\x7F]+", "")) %>%  # remove non-english  characters
+  select(created_at, tweet, mentions_vaccine, text) %>% 
+  unnest_tokens(word, text)
+```
+
+Let's look at the common words by day:
+
+```{r}
+word_freq <- tidy_tweets %>% 
+  mutate(day = day(created_at)) %>% 
+  count(day, word, sort = TRUE) 
+
+word_freq %>% 
+  arrange(day, -n ) %>% 
+  group_by(day) %>% 
+  top_n(5)
+```
+Not very interesting at the moment, because the words are mostly stop words. One option would be remove these, and do it again.
+
+```{r}
+word_freq %>% 
+  filter(!(word %in% stop_words$word)) %>% 
+  arrange(day, -n ) %>% 
+  group_by(day) %>% 
+  top_n(5)
+```
+
+## tf-idf
+
+Another option of teasing out interesting (as in both important and unique) words is to look at a measure called tf-idf. Term frequency, or tf, gives the number of times a word is used in a particular document (in this case, I am defining a document as a day). Inverse document frequency, or idf, penalizes words that occur in many documents. tf-idf is the product of these. 
+
+```{r}
+tf_idf <- word_freq %>% 
+  bind_tf_idf(word, day, n) %>%
+  arrange(day, -n) %>% 
+  group_by(day) %>% 
+  top_n(5, wt = tf_idf) 
+
+tf_idf
+```
+
+# Bigrams
+
+The analysis above just looked at common / important words separately, but it may be more useful in some contexts to look at how different words appear together. The simplest version of this is looking at bigrams, i.e., pairs of words. 
+
+We can get bigrams in much the same way as we got breakdowns by separate words:
+
+```{r}
+toronto_bigrams <- toronto_tweets %>% 
+  mutate(day = day(created_at)) %>% 
+  mutate(text = str_trim(str_replace_all(text, "@[A-Za-z0-9]+\\w+", ""))) %>% # remove twitter handles
+  mutate(text = str_trim(str_replace_all(text, "#[A-Za-z0-9]+\\w+", ""))) %>% # remove hash tags
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z0-9]+\\w+", "")) %>% # remove websites
+  mutate(text = str_replace_all(text, "\\w*[0-9]+\\w*\\s*", "")) %>% # remove numbers
+  mutate(text = str_replace_all(text, "[^\x01-\x7F]+", "")) %>%  # remove non-english  characters
+  select(day, mentions_vaccine, text) %>% 
+  unnest_tokens(bigram, text, token = "ngrams", n = 2)
+```
+
+Looking at the most common:
+
+```{r}
+toronto_bigrams %>% 
+  count(bigram, sort = TRUE) %>% 
+  top_n(10)
+```
+We have the same issue as before in that a lot of the top results are stop words. We can remove these as follows:
+
+```{r}
+bigrams_separated <- toronto_bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ") # takes a while
+
+
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word)
+
+```
+
+Now getting counts by pairs:
+
+```{r}
+bigram_counts <- bigrams_filtered %>% 
+  count(word1, word2, sort = TRUE) %>% 
+  drop_na()
+
+bigram_counts %>% 
+  head(10)
+```
+Joining the bigrams back together using the `unite` function:
+
+```{r}
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ")
+```
+
+Now look at some common ones by whether or not vaccine is mentioned:
+
+```{r}
+bigrams_united %>% 
+  filter(bigram!="NA NA") %>% 
+  filter(mentions_vaccine==0) %>% 
+  count(bigram, sort=TRUE) %>% 
+  head()
+
+
+bigrams_united %>% 
+  filter(bigram!="NA NA") %>% 
+  filter(mentions_vaccine==1) %>% 
+  count(bigram, sort=TRUE) %>% 
+  head()
+```
+
+Finally, we can calculate tf-idf on bigrams, just like we did for separate words:
+
+```{r}
+bigram_tf_idf <- bigrams_united %>%
+  count(mentions_vaccine, bigram) %>%
+  bind_tf_idf(bigram, mentions_vaccine, n) %>%
+  arrange(desc(tf_idf))
+
+```
+
+Plot the highest values for tweets mentioning vaccines:
+
+```{r}
+bigram_tf_idf %>% 
+  group_by(mentions_vaccine) %>% 
+  top_n(10) %>% 
+  filter(mentions_vaccine==1) %>% 
+  mutate(bigram = fct_reorder(bigram, tf_idf)) %>% 
+  ggplot(aes(bigram, tf_idf)) + 
+  coord_flip() +
+  geom_bar(stat = 'identity', fill = "navy") + 
+  labs(title = "Bigrams with the highest tf-idf for Toronto tweets that mention vaccines",
+       caption = "Based on 125000 tweets collected using rtweet",
+       x = NULL, 
+       y = "tf-idf") + 
+  theme_bw()
+```
+
+# Sentiment analysis
+
+Finally, let's categorize words into whether or not they are generally thought to be positive or negative, and look at differences across days/tweets. This is done by joining out tweet word dataset onto a pre-defined dataset that lists positive and negative words. Note that there are known issues with this technique, because of, for example, different meanings in different contexts, the inability to pick up sarcasm, emoticons, etc. 
+
+First of all let's get our list of sentiments and join this to the `tidy_tweets` tibble. We can then count common words by sentiment and whether or not the tweet mentions vaccines, for example. 
+
+```{r}
+bing <- get_sentiments("bing")
+
+common_words_by_sentiment <- tidy_tweets %>% 
+  inner_join(bing) %>% 
+  count(word, mentions_vaccine, sentiment) %>% 
+  arrange(mentions_vaccine, sentiment, -n )
+
+```
+
+(language warning!)
+
+```{r}
+common_words_by_sentiment %>% 
+  group_by(mentions_vaccine, sentiment) %>% 
+  top_n(5)
+```
+Look at some example tweets:
+
+```{r}
+# negative
+
+toronto_tweets %>% 
+  filter(str_detect(text, "risk"), mentions_vaccine==1) %>% 
+  select(text) %>% 
+  head()
+
+toronto_tweets %>% 
+  filter(str_detect(text, "sick"), mentions_vaccine==1) %>% 
+  select(text) %>% 
+  head()
+
+# positive
+
+toronto_tweets %>% 
+  filter(str_detect(text, "hot"), mentions_vaccine==1) %>% 
+  select(text) %>% 
+  head()
+
+toronto_tweets %>% 
+  filter(str_detect(text, "good"), mentions_vaccine==1) %>% 
+  select(text) %>% 
+  head()
+```
+
+Now let's calculate the proportion of negative words by day and whether or not the tweet mentions vaccines:
+
+```{r}
+prop_negative <- tidy_tweets %>% 
+  mutate(day = day(created_at)) %>% 
+  inner_join(bing) %>% 
+  count(word, day, mentions_vaccine, sentiment) %>% 
+  group_by(day, mentions_vaccine) %>% 
+  summarize(prop_negative_tweets = sum(n[sentiment=="negative"])/sum(n))
+```
+
+Plot!
+
+```{r}
+prop_negative %>% 
+  mutate(mentions_vaccine = ifelse(mentions_vaccine=="1", "Yes", "No")) %>% 
+  ggplot(aes(day, prop_negative_tweets, color = mentions_vaccine)) + 
+  geom_point() + 
+  geom_line() + 
+  labs(title = "Proportion of negative words in Toronto-based tweets", 
+       subtitle = "by whether or not vaccines are mentioned",
+       x = "date (April 2021)",
+       y = "proportion of negative words",
+       caption = "Based on 125000 tweets collected using rtweet") + 
+  theme_bw(base_size = 14) + 
+  scale_x_continuous(breaks = 18:27) + 
+  scale_color_brewer(name = "Mentions vaccine", palette = "Set1")
+
+```
+
+
+# Review questions
+
+1. Using the `toronto_tweets` dataset, count the proportion of tweets that mention Doug Ford, stratified by whether or not they also mention vaccines.
+2. Find the top ten most used hashtags in the `toronto_tweets` dataset.
+3. (harder) Extract 18000 tweets that use the hashtag "#Oscars" plot how sentiment (e.g., the proportion of positive words) changes over time (by the hour). 

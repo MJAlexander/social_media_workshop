@@ -101,7 +101,6 @@ class: center, middle, inverse
 --
 
 - Data about people
---
 
     + characteristics, movements, connections, interests, views...
 --
@@ -111,12 +110,11 @@ class: center, middle, inverse
 
 - Strengths that traditional data sources often don't have
 
---
-
     + timely
---
-
+    
     + large sample sizes
+    
+    + granular information
 --
 
 - But potential drawbacks as well (more later)

@@ -6,7 +6,7 @@
 # We will extract some tweets, geocode a location and map it, and do some sentiment analysis
 # Below is a list of packages you will need to have installed. 
 # If you don't have them installed, you can install them using "install.packages()"
-# For example to install tidyverse, run install.packages("tidyverse)
+# For example to install tidyverse, run install.packages("tidyverse")
 
 # Load packages -----------------------------------------------------------
 
@@ -48,7 +48,7 @@ monica_timeline <- get_timeline("monjalexander", n = 1200)
 monica_location <- tibble(location = monica_info$location)
 
 monica_location <- monica_location %>% 
-  geocode(address = location, 
+  tidygeocoder::geocode(address = location, 
           method = "osm")
 
 # monica_location should be a tibble of dimensions 1 x 3

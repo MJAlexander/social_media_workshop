@@ -312,7 +312,7 @@ ggplot(data = life_satis_age_sex, aes(x = age_group, y = mean_life_satis, colour
 Start with the scatter plot from the introductory example:
 
 ```{r}
-  ggplot(country_ind_2017, aes(tfr, life_expectancy, color = region,)) + 
+ggplot(country_ind_2017, aes(tfr, life_expectancy, color = region)) + 
   geom_point() + 
   ggtitle("TFR versus life expectancy, 2017")+
   theme_bw(base_size = 14) + 
